@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cal.pro — MVP de réservation en ligne
 
-## Getting Started
+Alternative française à Calendly. **Stack $0**.
 
-First, run the development server:
+## Stack technique
+
+| Layer | Tech |
+|-------|------|
+| Frontend | Next.js 14 + TypeScript + Tailwind CSS |
+| Backend | Next.js API Routes |
+| Database | PostgreSQL via Supabase (gratuit) |
+| Auth | NextAuth.js v4 (Google + Email magic link) |
+| Paiements | Stripe |
+| Emails | Resend |
+| Hosting | Railway ou Vercel |
+
+## Démarrage rapide
+
+### 1. Base de données (Supabase)
+
+1. Créer un projet sur [supabase.com](https://supabase.com)
+2. Copier la `DATABASE_URL` depuis Settings > Database
+
+### 2. Google OAuth
+
+1. Aller sur [console.cloud.google.com](https://console.cloud.google.com)
+2. Créer un projet → Credentials → OAuth 2.0 Client ID
+3. Ajouter `http://localhost:3000/api/auth/callback/google` en URI autorisé
+
+### 3. Resend (emails)
+
+1. Créer un compte sur [resend.com](https://resend.com)
+2. Générer une API key
+
+### 4. Stripe
+
+1. Créer un compte sur [stripe.com](https://stripe.com)
+2. Copier les clés test depuis le Dashboard
+3. Créer un webhook pointant vers `/api/webhooks/stripe`
+
+### 5. Installation
 
 ```bash
+cp .env.local.example .env.local
+# Remplir les valeurs dans .env.local
+
+npm install
+npx prisma generate
+npx prisma db push
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrir [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Structure du projet
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+  page.tsx                    # Landing page
+  layout.tsx                  # Layout racine
+  dashboard/
+    page.tsx                  # Dashboard principal
+    settings/page.tsx         # Paramètres profil
+  [username]/[slug]/page.tsx  # Page de réservation publique
+  cancel/[token]/page.tsx     # Annulation de réservation
+  auth/signin/page.tsx        # Page de connexion
+  api/
+    auth/[...nextauth]/       # NextAuth
+    event-types/              # CRUD types d'événements
+    bookings/                 # CRUD réservations
+    public/[username]/[slug]/ # API publique (infos + créneaux)
+    cancel/[token]/           # Annulation
+    user/                     # Profil utilisateur
+    webhooks/stripe/          # Webhooks Stripe
 
-## Learn More
+components/
+  Navigation.tsx
+  Providers.tsx
+  dashboard/
+    Sidebar.tsx
+    BookingsCalendar.tsx
+    UpcomingBookings.tsx
+    StatsBar.tsx
+    CreateEventTypeModal.tsx
+  booking/
+    BookingCalendar.tsx
+    BookingForm.tsx
+    BookingSuccess.tsx
 
-To learn more about Next.js, take a look at the following resources:
+lib/
+  prisma.ts    # Client Prisma singleton
+  auth.ts      # Config NextAuth
+  slots.ts     # Calcul des créneaux disponibles
+  email.ts     # Envoi d'emails via Resend
+  stripe.ts    # Client Stripe
+  ical.ts      # Génération iCal
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+prisma/
+  schema.prisma
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Déploiement (Railway)
 
-## Deploy on Vercel
+1. Push le code sur GitHub
+2. Créer un projet sur [railway.app](https://railway.app)
+3. Connecter le repo GitHub
+4. Ajouter un plugin PostgreSQL
+5. Configurer les variables d'environnement
+6. Déployer
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Roadmap V2
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [ ] SMS reminders (Twilio)
+- [ ] Champs custom (UI complète)
+- [ ] Équipes multi-membres
+- [ ] Analytics de réservation
+- [ ] Templates email personnalisés
+- [ ] Branding (couleurs, logo)
+- [ ] Webhooks / API publique
+- [ ] Sync Microsoft Calendar
