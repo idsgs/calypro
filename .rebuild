@@ -1,2 +1,3 @@
 # Force Vercel to deploy custom Cal.pro frontend - 2026-05-23
 # GitHub webhook reconnection triggered - ensuring latest Cal.pro code deploys
+# Force redeploy with webhook fix - triggering fresh deployment now
